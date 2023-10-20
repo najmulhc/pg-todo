@@ -7,7 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 app.post("/", async (req, res) => {
   try {
     const { name } = req.body;
@@ -26,13 +25,35 @@ app.post("/", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-  const result = await pool.query("SELECT * FROM todos;");
-  const todos = result.rows;
-  res.json({
-    todos,
-  });
+  const { id } = req.query;
+  if (id) {
+    const result = await pool.query(`SELECT * FROM todos WHERE id=${id}`);
+    res.json({
+      todo: result.rows[0],
+    });
+  } else {
+    const result = await pool.query("SELECT * FROM todos;");
+    const todos = result.rows;
+    res.json({
+      todos,
+    });
+  }
 });
 
+app.put("/", async (req, res) => {
+  try {
+    const { id } = req.query;
+    const { name } = req.body;
+    const results =
+      await pool.query(`UPDATE todos SET name='${name}' WHERE id=${id}; 
+  SELECT * FROM todos;`);
+    res.json({
+      todos: results[1].rows,
+    });
+  } catch (error) {
+    res.json(error.message);
+  }
+});
 
 app.delete("/", async (req, res) => {
   try {
