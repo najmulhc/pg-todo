@@ -1,15 +1,25 @@
 const express = require("express");
-const cors = require("cors")
+const cors = require("cors");
+const pool = require("./db");
 
 const app = express();
 
 app.use(cors());
 
 
-app.get("/", (req, res) => {
-    res.json({
-        message: "Huda is excited to use postgress!!!"
-    })
+app.get("/", async (req, res) => {
+  pool.query("SELECT * FROM todos;", (error, results) => {
+    if(error) {
+        res.json({
+            ...error
+        })
+    } else {
+     const todos = results.rows;
+     res.json({
+        todos
+     })
+    }
+  })
 })
 
 
